@@ -19,4 +19,4 @@ use Illuminate\Http\Request;
 
 Route::post('/register', 'UserController@register')->name('register');
 Route::post('/login', 'UserController@login')->name('login');
-Route::post('/update', 'UserController@update')->name('update');
+Route::put('/update', 'UserController@update')->name('update');

@@ -115,7 +115,45 @@ class UserController extends Controller
         $token = $request->header('Authorization');
         $checkToken = $this->jwtAuth->checkToken($token);
 
-        return response()->json($checkToken,200);
+        if ($checkToken){
+
+            $validator = Validator::make($request->toArray(), [
+                'name' => ['nullable', 'string', 'max:50', 'alpha'],
+                'surname' => ['nullable', 'string', 'max:100', 'alpha'],
+                'description' => ['nullable', 'string', 'max:255'],
+                'image' => ['nullable', 'string', 'max:255'],
+            ]);
+
+            if($validator->fails()) {
+                $data = [
+                    'status' => 'error',
+                    'code' => 401,
+                    'message' => 'Los datos son erroneos',
+                    'errors' => $validator->errors()
+                ];
+
+            }
+
+            $inputs = $request->except('email','role','password');
+            $identity = $this->jwtAuth->checkToken($token,true);
+            $user = User::findOrFail($identity->sub)->update($inputs);
+
+            $data = [
+                'status' => 'success',
+                'code' => 200,
+                'message' => 'El usuario se actualizo correctamente',
+                'user_id' => $identity->sub
+            ];
+
+        }else{
+            $data = [
+              'status' => 'error',
+              'code' => 401,
+              'message' => 'NO Autorizado.'
+            ];
+        }
+
+        return response()->json($data,$data['code']);
     }
 
 }
