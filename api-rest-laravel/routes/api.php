@@ -19,4 +19,5 @@ use Illuminate\Http\Request;
 
 Route::post('/register', 'UserController@register')->name('register');
 Route::post('/login', 'UserController@login')->name('login');
-Route::put('/update', 'UserController@update')->name('update');
+Route::put('/user/update', 'UserController@update')->name('user.update');
+Route::post('/user/upload', 'UserController@upload')->name('user.upload')->middleware('api.auth');

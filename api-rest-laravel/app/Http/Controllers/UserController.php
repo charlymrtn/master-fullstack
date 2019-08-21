@@ -156,4 +156,15 @@ class UserController extends Controller
         return response()->json($data,$data['code']);
     }
 
+    public function upload(Request $request)
+    {
+        $data = [
+            'status' => 'error',
+            'code' => 501,
+            'message' => 'Error al subir imagen'
+        ];
+
+        return response()->json($data,$data['code']);
+    }
+
 }
