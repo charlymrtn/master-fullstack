@@ -6,6 +6,7 @@ use App\Classes\JwtAuth;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Validator;
@@ -138,7 +139,7 @@ class UserController extends Controller
 
             $inputs = $request->except('email','role','password');
             $identity = $this->jwtAuth->checkToken($token,true);
-            $user = User::findOrFail($identity->sub)->update($inputs);
+            User::findOrFail($identity->sub)->update($inputs);
 
             $data = [
                 'status' => 'success',
@@ -161,27 +162,114 @@ class UserController extends Controller
     public function upload(Request $request)
     {
         $image = $request->file('file0');
+        $pass = true;
 
-        if ($image){
-            $image_name = time().$image->getClientOriginalName();
-            Storage::disk('users')->put($image_name, File::get($image));
+        $validator = Validator::make($request->all(),[
+            'file0' => 'required|image|mimes:png,jpeg,jpg,gif'
+        ]);
 
-            $data = [
-                'status' => 'success',
-                'code' => 200,
-                'message' => 'Imagen cargada correctamente',
-                'image' => $image_name
-            ];
-
-        }else{
+        if ($validator->fails()){
             $data = [
                 'status' => 'error',
                 'code' => 501,
-                'message' => 'Error al subir imagen'
+                'message' => 'Tipo de archivo invalido'
             ];
+            $pass = false;
+        }
+        if ($pass){
+            if ($image){
+                $image_name = time().$image->getClientOriginalName();
+                $image_uploaded = Storage::disk('users')->put($image_name, File::get($image));
+                if ($image_uploaded){
+                    $data = [
+                        'status' => 'success',
+                        'code' => 200,
+                        'message' => 'Imagen cargada correctamente',
+                        'image' => $image_name
+                    ];
+                    $token = $request->header('Authorization');
+                    $checkToken = $this->jwtAuth->checkToken($token,true);
+                    User::findOrFail($checkToken->sub)->update(['image' => $image_name]);
+
+                }else{
+                    $data = [
+                        'status' => 'error',
+                        'code' => 501,
+                        'message' => 'Error al subir imagen'
+                    ];
+                }
+
+
+            }else{
+                $data = [
+                    'status' => 'error',
+                    'code' => 501,
+                    'message' => 'Error al subir imagen'
+                ];
+            }
         }
 
         return response()->json($data,$data['code']);
+    }
+
+    public function getImage(string $filename)
+    {
+
+        if(empty($filename) || is_null($filename) || !isset($filename)) {
+            $data = [
+                'status' => 'error',
+                'code' => 401,
+                'message' => 'nombre de archivo incorrecto'
+            ];
+        }
+
+        if (Storage::disk('users')->exists($filename)){
+            $image = Storage::disk('users')->get($filename);
+            return new Response($image,200);
+
+        } else {
+
+            $data = [
+                'status' => 'error',
+                'code' => 404,
+                'message' => 'archivo no existe'
+            ];
+
+        }
+
+        return response()->json($data,$data['code']);
+    }
+
+    public function getImageUser(Request $request)
+    {
+
+        $token = $request->header('Authorization');
+        $checkToken = $this->jwtAuth->checkToken($token,true);
+        $user = User::where('id',$checkToken->sub)->first();
+
+        $validator = Validator::make(['filename' => $user->image],[
+            'filename' => 'required|string'
+        ]);
+
+        if ($validator->fails()){
+            $data = [
+                'status' => 'error',
+                'code' => 501,
+                'message' => 'nombre de archivo no encontrado'
+            ];
+        }
+
+        if (Storage::disk('users')->exists($user->image)){
+            $image = Storage::disk('users')->get($user->image);
+            return new Response($image,200);
+        }else{
+            $data = [
+                'status' => 'error',
+                'code' => 404,
+                'message' => 'archivo no existe'
+            ];
+            return response()->json($data,$data['code']);
+        }
     }
 
 }

@@ -21,3 +21,6 @@ Route::post('/register', 'UserController@register')->name('register');
 Route::post('/login', 'UserController@login')->name('login');
 Route::put('/user/update', 'UserController@update')->name('user.update');
 Route::post('/user/upload', 'UserController@upload')->name('user.upload')->middleware('api.auth');
+//Route::get('/user/image/{filename}', 'UserController@getImage')->name('user.image')->middleware('api.auth');
+Route::get('/user/image', 'UserController@getImageUser')->name('user.image')->middleware('api.auth');
+Route::get('/user/avatar/{filename}', 'UserController@getImage')->name('user.avatar');
