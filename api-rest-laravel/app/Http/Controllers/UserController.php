@@ -240,36 +240,40 @@ class UserController extends Controller
         return response()->json($data,$data['code']);
     }
 
-    public function getImageUser(Request $request)
+    public function getProfile(int $id)
     {
 
-        $token = $request->header('Authorization');
-        $checkToken = $this->jwtAuth->checkToken($token,true);
-        $user = User::where('id',$checkToken->sub)->first();
-
-        $validator = Validator::make(['filename' => $user->image],[
-            'filename' => 'required|string'
-        ]);
-
-        if ($validator->fails()){
+        if(empty($id) || is_null($id) || !isset($id) || !is_numeric($id)) {
             $data = [
                 'status' => 'error',
-                'code' => 501,
-                'message' => 'nombre de archivo no encontrado'
+                'code' => 401,
+                'message' => 'id incorrecto'
             ];
         }
 
-        if (Storage::disk('users')->exists($user->image)){
-            $image = Storage::disk('users')->get($user->image);
-            return new Response($image,200);
-        }else{
+        $user = User::find($id);
+
+        if ($user){
+            $user->makeHidden('email_verified_at');
+
+            $data = [
+                'status' => 'success',
+                'code' => 200,
+                'message' => 'usuario encontrado',
+                'user' => $user
+            ];
+
+        } else {
+
             $data = [
                 'status' => 'error',
                 'code' => 404,
-                'message' => 'archivo no existe'
+                'message' => 'usuario no existe'
             ];
-            return response()->json($data,$data['code']);
+
         }
+
+        return response()->json($data,$data['code']);
     }
 
 }
