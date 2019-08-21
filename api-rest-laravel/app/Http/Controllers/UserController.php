@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Classes\JwtAuth;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -70,5 +71,8 @@ class UserController extends Controller
     public function login(Request $request)
     {
         //
+        $jwtAuth = new JwtAuth();
+        dd($jwtAuth->signIn());
+
     }
 }
