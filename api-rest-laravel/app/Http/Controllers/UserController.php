@@ -104,9 +104,18 @@ class UserController extends Controller
 
         $inputs = $request->only('email','password');
 
-        $login = $this->jwtAuth->signIn($inputs,true);
+        $data = $this->jwtAuth->signIn($inputs,true);
 
-        return response()->json($login,$login['code']);
+        return response()->json($data,$data['code']);
 
     }
+
+    public function update(Request $request)
+    {
+        $token = $request->header('Authorization');
+        $checkToken = $this->jwtAuth->checkToken($token);
+
+        return response()->json($checkToken,200);
+    }
+
 }
