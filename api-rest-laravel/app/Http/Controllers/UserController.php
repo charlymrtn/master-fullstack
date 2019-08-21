@@ -6,6 +6,8 @@ use App\Classes\JwtAuth;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
@@ -158,11 +160,26 @@ class UserController extends Controller
 
     public function upload(Request $request)
     {
-        $data = [
-            'status' => 'error',
-            'code' => 501,
-            'message' => 'Error al subir imagen'
-        ];
+        $image = $request->file('file0');
+
+        if ($image){
+            $image_name = time().$image->getClientOriginalName();
+            Storage::disk('users')->put($image_name, File::get($image));
+
+            $data = [
+                'status' => 'success',
+                'code' => 200,
+                'message' => 'Imagen cargada correctamente',
+                'image' => $image_name
+            ];
+
+        }else{
+            $data = [
+                'status' => 'error',
+                'code' => 501,
+                'message' => 'Error al subir imagen'
+            ];
+        }
 
         return response()->json($data,$data['code']);
     }
