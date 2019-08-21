@@ -37,10 +37,17 @@ class JwtAuth
             $decoded = JWT::decode($jwt, $this->key, ['HS256']);
 
             if ($getToken){
-                $response = $jwt;
+                $data = $jwt;
             }else{
-                $response = $decoded;
+                $data = $decoded;
             }
+
+            $response = [
+                'status' => 'success',
+                'message' => 'Login correcto',
+                'code' => 200,
+                'data' => $data
+            ];
 
         }else{
 

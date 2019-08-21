@@ -104,7 +104,9 @@ class UserController extends Controller
 
         $inputs = $request->only('email','password');
 
-        dd($this->jwtAuth->signIn($inputs,true));
+        $login = $this->jwtAuth->signIn($inputs,true);
+
+        return response()->json($login,$login['code']);
 
     }
 }
