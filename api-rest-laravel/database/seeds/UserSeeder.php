@@ -18,7 +18,7 @@ class UserSeeder extends Seeder
             'name' => 'admin',
             'surname' => 'pajaro',
             'email' => 'cjmar87@gmail.com',
-            'password' => bcrypt('123456'),
+            'password' => hash('sha256','123456'),
             'role' => 'ROLE_ADMIN',
             'description' => 'Administrador',
             'image' => '',

@@ -10,6 +10,14 @@ use Illuminate\Support\Facades\Validator;
 
 class UserController extends Controller
 {
+
+    protected $jwtAuth;
+
+    public function __construct ()
+    {
+        $this->jwtAuth = new JwtAuth();
+    }
+
     /**
      * Register a user
      *
@@ -40,11 +48,12 @@ class UserController extends Controller
             ];
 
         } else {
+
             $inputs = $request->toArray();
             $inputs['role'] = "ROLE_USER";
             $inputs['description'] = "Usuario nuevo";
             $inputs['image'] = "";
-            $inputs['password'] = bcrypt($inputs['password']);
+            $inputs['password'] = hash('sha256',$inputs['password']);
             unset($inputs['password_confirmation']);
             $inputs = array_map(
                 'trim', $inputs
@@ -71,8 +80,31 @@ class UserController extends Controller
     public function login(Request $request)
     {
         //
-        $jwtAuth = new JwtAuth();
-        dd($jwtAuth->signIn());
+
+        $data = [
+            'status' => 'error',
+            'code' => 500,
+            'message' => 'El usuario no se logueo correctamente'
+        ];
+
+        $validator = Validator::make($request->toArray(), [
+            'email' => ['required', 'string', 'email', 'max:255'],
+            'password' => ['required', 'string', 'min:6'],
+        ]);
+
+        if($validator->fails()) {
+            $data = [
+                'status' => 'error',
+                'code' => 401,
+                'message' => 'Los parametros de login estan incompletos',
+                'errors' => $validator->errors()
+            ];
+
+        }
+
+        $inputs = $request->only('email','password');
+
+        dd($this->jwtAuth->signIn($inputs,true));
 
     }
 }
