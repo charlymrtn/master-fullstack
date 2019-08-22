@@ -23,3 +23,6 @@ Route::put('/user/update', 'UserController@update')->name('user.update');
 Route::post('/user/upload', 'UserController@upload')->name('user.upload')->middleware('api.auth');
 Route::get('/user/avatar/{filename}', 'UserController@getImage')->name('user.avatar');
 Route::get('/user/profile/{id}', 'UserController@getProfile')->name('user.profile');
+
+Route::post('/categories/image/{id}','CategoryController@upload')->name('categories.image')->middleware('api.auth');
+Route::apiResource('/categories', 'CategoryController')->middleware('api.auth');
